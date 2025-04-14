@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Execute the statement
             if (mysqli_stmt_execute($stmt)) {
                 echo "<script> Alert: Registration Successful </script>";
-                header("location: includes/verify_notice.php");
+                header("location: login.php");
                     exit();
 
                            } else {
