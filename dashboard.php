@@ -1,3 +1,14 @@
+<?php
+// Initialize the session
+session_start();
+
+// Check if the user is logged in; if not, redirect to the login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: login.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -42,16 +53,16 @@
 
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav  ">
-                            <li class="nav-item ">
+                            <li class="nav-item">
                                 <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item active">
                                 <a class="nav-link" href="about.html"> About</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="work.html">Work </a>
                             </li>
-                            <li class="nav-item active">
+                            <li class="nav-item">
                                 <a class="nav-link" href="category.html"> Category </a>
                             </li>
                         </ul>
@@ -88,80 +99,73 @@
         <!-- end header section -->
     </div>
 
-    <!-- category section -->
 
-    <section class="category_section layout_padding">
+    <!-- experience section -->
+
+    <section class="experience_section layout_padding-top layout_padding2-bottom">
         <div class="container">
-            <div class="heading_container">
-                <h2>
-                    Category
-                </h2>
-            </div>
-            <div class="category_container">
-                <div class="box">
+            <div class="row">
+                <div class="col-md-5">
                     <div class="img-box">
-                        <img src="images/c1.png" alt="">
-                    </div>
-                    <div class="detail-box">
-                        <h5>
-                            Phone Tracking
-                        </h5>
+                        <img src="images/experience-img.jpg" alt="">
                     </div>
                 </div>
-                <div class="box">
-                    <div class="img-box">
-                        <img src="images/c2.png" alt="">
-                    </div>
+                <div class="col-md-7">
                     <div class="detail-box">
-                        <h5>
-                            Data Recovery
-                        </h5>
+                        <div class="heading_container">
+                            <h2>
+                                Best Experinced Phone Trackers in Nairobi and beyond
+                            </h2>
+                        </div>
+                        <p>
+                            We know it is painfull and stressfull to loose your phone and have nowhere to get help from, that is where we come in and help you with the hassle and tassle of finding it.
+                        </p>
+                        <p>Enter your phone IMEI code below</p>
+                        <div class="btn-box">
+                            <a href="imei.php" class="btn-1">
+                IMEI Code
+              </a>
+                            <a href="" class="btn-2">   
+                HIstory
+              </a>
+                        </div>
                     </div>
                 </div>
-                <div class="box">
-                    <div class="img-box">
-                        <img src="images/c3.png" alt="">
-                    </div>
-                    <div class="detail-box">
-                        <h5>
-                            Spy Softwares
-                        </h5>
-                    </div>
-                </div>
-                <div class="box">
-                    <div class="img-box">
-                        <img src="images/c4.png" alt="">
-                    </div>
-                    <div class="detail-box">
-                        <h5>
-                            Video Edting
-                        </h5>
-                    </div>
-                </div>
-                <div class="box">
-                    <div class="img-box">
-                        <img src="images/c5.png" alt="">
-                    </div>
-                    <div class="detail-box">
-                        <h5>
-                            Logo Design
-                        </h5>
-                    </div>
-                </div>
-                <div class="box">
-                    <div class="img-box">
-                        <img src="images/c6.png" alt="">
-                    </div>
-                    <div class="detail-box">
-                        <h5>
-                            Home Appliances Insurance
-                        </h5>
-                    </div>
-                </div>
+
             </div>
         </div>
     </section>
-    <!-- end category section -->
+
+    <!-- end experience section -->
+
+
+    <!-- about section -->
+
+    <!-- <section class="about_section layout_padding-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 col-lg-9 mx-auto">
+                    <div class="img-box">
+                        <img src="images/about-img.jpg" alt="">
+                    </div>
+                </div>
+            </div>
+            <div class="detail-box">
+                <h2>
+                    About Mbau Finders
+                </h2>
+                <p>
+                    In this centuary a computer or a phone is a powerul tool that one does posses and loosing it might be really stressing. The process of recovering the phone via the security agencies might also be stressfull them being not open to charging the people that
+                    have incurred losses. At Mbau we help you with all these as we have trained professionals who track the device and with the help of the police recover it and bring joy to you once more.</p>
+                <p>All this is done at an affordable price and even help you press charges incase you want to be refunded for any damages caused.</p>
+                <a href="">
+      Read More
+    </a>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- end about section -->
 
     <!-- info section -->
 
@@ -316,6 +320,7 @@
     <script src="js/jquery-3.4.1.min.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/custom.js"></script>
+
 
 </body>
 </body>

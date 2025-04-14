@@ -1,86 +1,85 @@
 <?php
+
+// Initialize the session
+session_start();
+
+// Check if the user is logged in; if not, redirect to the login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: login.php");
+    exit;
+}
+ 
+// Include config file
 require_once "db/config.php";
-
-
+ 
 // Define variables and initialize with empty values
-$first_name = $last_name= $email = $phone = $password = $confirm_password =  "";
-$first_name_err = $last_name_err = $email_err = $phone_err = $password_err = $confirm_password_err = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Assign the form values to variables
-    $first_name = trim($_POST["first_name"]);
-    $last_name = trim($_POST["last_name"]);
-    $email = trim($_POST["email"]);
-    $phone = trim($_POST["phone"]);
-    $password = trim($_POST["password"]);
-    $confirm_password = trim($_POST["confirm_password"]);
-
-    // Check if email already exists
-    $sql_check_email = "SELECT id FROM users WHERE email = ?";
-    if ($stmt_check = mysqli_prepare($connection, $sql_check_email)) {
-        mysqli_stmt_bind_param($stmt_check, "s", $param_email);
-        $param_email = $email;
-        
-        mysqli_stmt_execute($stmt_check);
-        mysqli_stmt_store_result($stmt_check);
-        
-        if (mysqli_stmt_num_rows($stmt_check) > 0) {
-            $email_err = "This email is already taken.";
-        }
-        
-        mysqli_stmt_close($stmt_check);
-    }
-
-    // Validate password and confirm password match
-    
-    if ($password != $confirm_password) {
-        $password_err = "Passwords do not match.";
-        echo '<script>alert("Passwords do not match.")</script>';
+$input =  "";
+$input_err =  "";
+ 
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+    // Check if input is empty
+    if(empty(trim($_POST["input"]))){
+        $input_err = "Please enter your phone imei.";
+    } else {
+        $input = trim($_POST["input"]);
     }
     
-
-
-    if (empty($first_name_err) && empty($last_name_err) && empty($email_err) && empty($phone_err) && empty($password_err) && empty($confirm_password_err)) {
-        $token = bin2hex(random_bytes(16)); // Generate a unique token
-
-        // Prepare the SQL query
-        $sql = "INSERT INTO users (first_name,last_name ,email, phone, password) VALUES (?, ?, ?, ?, ?)";
+    // Check if password is empty
+   
+    // Validate credentials
+    if(empty($input_err) ){
+        // Prepare a select statement
+        $sql = "SELECT id, email, password FROM users WHERE email = ?";
         
-        if ($stmt = mysqli_prepare($connection, $sql)) {
-            mysqli_stmt_bind_param($stmt, "sssss", $param_first_name,$param_last_name, $param_email, $param_phone, $param_password);
+        if($stmt = mysqli_prepare($connection, $sql)){
+            // Bind variables to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "s", $param_input);
             
             // Set parameters
-            $param_first_name = $first_name;
-            $param_last_name = $last_name;
-            $param_email = $email;
-            $param_phone = $phone;
-            $param_password = password_hash($password, PASSWORD_DEFAULT);
-            
-
-            // Debugging: Show the parameters before executing the query
-            echo "first_name: $param_first_name<br>";
-            echo "last_name: $param_last_name<br>";
-            echo "Email: $param_email<br>";
-            echo "Phone: $param_phone<br>";
-            echo "Password: $param_password<br>";
-            
-
-            // Execute the statement
-            if (mysqli_stmt_execute($stmt)) {
-                echo "<script> Alert: Registration Successful </script>";
-                header("location: includes/verify_notice.php");
-                    exit();
-
-                           } else {
-                echo "Error executing query: " . mysqli_error($connection);
+            $param_input = $input;
+             
+            // Attempt to execute the prepared statement
+            if(mysqli_stmt_execute($stmt)){
+                // Store result
+                mysqli_stmt_store_result($stmt);
+                
+                // Check if username or email exists, if yes then verify password
+                if(mysqli_stmt_num_rows($stmt) == 1){                    
+                    // Bind result variables
+                    mysqli_stmt_bind_result($stmt, $id, $email, $hashed_password);
+                    if(mysqli_stmt_fetch($stmt)){
+                        if(password_verify($password, $hashed_password)){
+                            // Password is correct, so start a new session
+                            session_start();
+                            
+                            // Store data in session variables
+                            $_SESSION["loggedin"] = true;
+                            $_SESSION["id"] = $id;
+                            // $_SESSION["username"] = $username;
+                            $_SESSION["email"] = $email;
+                            
+                            // Redirect user to report page
+                            header("location: dashboard.php");
+                        } else {
+                            // Display an error message if password is not valid
+                            $password_err = "The password you entered was not valid.";
+                        }
+                    }
+                } else {
+                    // Display an error message if username or email doesn't exist
+                    $input_err = "No account found with that username or email.";
+                }
+            } else {
+                echo "Oops! Something went wrong. Please try again later.";
             }
 
+            // Close statement
             mysqli_stmt_close($stmt);
-        } else {
-            echo "Error preparing query: " . mysqli_error($connection);
         }
     }
-
+    
+    // Close connection
     mysqli_close($connection);
 }
 ?>
@@ -99,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Register</title>
+    <title>Login</title>
 
     <!-- bootstrap core css -->
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
@@ -114,10 +113,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     .login-box{
 width: 300px;
-position: relative;
-/* top:0%; */
+position: absolute;
+top:0%;
 left: 50%;
-transform: translate(-50%,2%);
+transform: translate(-50%,20%);
 color: black;
 /* display: ; */
 
@@ -190,12 +189,12 @@ input[type=submit] {
     border-radius: 5px;
     background-color: #f2f2f2;
     /* padding: 20px; */
-    height:850px;
+    height:300px;
     width:550px;
     position: absolute;
     top:0.5px;
     left: 50%;
-    transform: translate(-50%,5%);
+    transform: translate(-50%,20%);
     color: white;
     
     }/* CSS Document */
@@ -266,58 +265,22 @@ input[type=submit] {
         <!-- end header section -->
     </div>
     <div class="contaner">
-        
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
     <div class="login-box">
-    <h1 id="hl">Sign Up</h1>
-        <div class="textbox <?php echo (!empty($first_name_err)) ? 'has-error' : ''; ?>">
-                <!-- <label>Username</label> -->
-                <input type="text" name="first_name" class="form-control" placeholder="Your First Name" value="<?php echo $first_name; ?>">
-                <span class="help-block"><?php echo $first_name_err; ?></span>
-            </div> 
-            <br>  
-            
-        <div class="textbox <?php echo (!empty($last_name_err)) ? 'has-error' : ''; ?>">
-                <!-- <label>Username</label> -->
-                <input type="text" name="last_name" class="form-control" placeholder="Your Last Name" value="<?php echo $last_name; ?>">
-                <span class="help-block"><?php echo $last_name_err; ?></span>
-            </div> 
-            <br>  
-            
-            <div class="textbox <?php echo (!empty($email_err)) ? 'has-error' : ''; ?>">
-                <!-- <label>Username</label> -->
-                <input type="email" name="email" class="form-control" placeholder="Email" value="<?php echo $email; ?>">
-                <span class="help-block"><?php echo $email_err; ?></span>
-            </div> 
-            <br>  
-
-            <div class="textbox <?php echo (!empty($phone_err)) ? 'has-error' : ''; ?>">
-                <!-- <label>Username</label> -->
-                <input type="text" name="phone" class="form-control" placeholder="Phone Number" value="<?php echo $phone; ?>">
-                <span class="help-block"><?php echo $phone_err; ?></span>
-            </div> 
-            <br>  
-            <div class="textbox <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
-                <!-- <label>Password</label> -->
-                <input type="password" name="password" class="form-control" placeholder="Password" value="<?php echo $password; ?>">
-                <span class="help-block"><?php echo $password_err; ?></span>
-            </div>
-            <br>
-
-            <div class="textbox <?php echo (!empty($confirm_password_err)) ? 'has-error' : ''; ?>">
-                <!-- <label>Confirm it</label> -->
-                <input type="password" name="confirm_password" class="form-control" placeholder="confirm password" value="<?php echo $confirm_password; ?>">
-                <span class="help-block"><?php echo $confirm_password_err; ?></span>
-            </div>
-            
-            <div >
-                <input type="submit" class="btn btn-primary" value="Submit">
-                <input type="reset" class="btn btn-default" value="Reset">
-            </div>
-
-            <p style="color: black;">Already have an account? <a href="login.php">Login here</a>.</p>
-            </div>
-        </form>
+        <h1 id="hl">IMEI Code</h1>
+        
+        <div class="textbox <?php echo (!empty($input_err)) ? 'has-error' : ''; ?>">
+            <i class="fa fa-user" aria-hidden="true"></i>
+            <input type="text" name="input" placeholder="IMEI Code" value="<?php echo $input; ?>">
+            <span class="help-block"><?php echo $input_err; ?></span>
+        </div>
+        
+        
+        
+        <input type="submit" class="btn btn-primary" value="Report">
+        
+    </div>
+</form>
     </div>
    
 
